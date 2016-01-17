@@ -1,7 +1,7 @@
 Pr0Clone
 ========
 
-Since Pr0gramm is lagging latly you can use this project to setup your own pr0gramm.com mirror.
+Since Pr0gramm is lagging lately you can use this project to setup your own pr0gramm.com mirror.
 The updater will frequently download new images from pr0gramm. You can then start the webserver and view pr0gramm content from your own server.
 
 IMPORTANT: Only images are stored localy. Comments and Tags are always loaded direcly from pr0gramm.com (for now)
