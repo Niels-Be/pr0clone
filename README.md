@@ -6,8 +6,6 @@ The updater will frequently download new images from pr0gramm.com. You can then 
 
 IMPORTANT: Only images are stored localy. Comments and Tags are always loaded direcly from pr0gramm.com (for now).
 
-Demo: [pr0gramm.tost-soft.de](http://pr0gramm.tost-soft.de)
-
 ##Running
 - Install [Docker](https://www.docker.com/)
 - run `./run_updater` to start the updater
