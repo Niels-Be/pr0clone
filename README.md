@@ -20,3 +20,8 @@ You can change this by editing the configs in `updater/main.js`
 ##Contribute
 
 Feel free to open issues or pull requests.
+
+### TODOs
+- more error handling
+- create own API to be completely independent of pr0gramm.com (exept login)
+- automatically delete old images
