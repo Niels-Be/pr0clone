@@ -54,7 +54,7 @@ http {
 
     server {
         listen 80;
-        server_name waeco-soft.com;
+        server_name ${HOST_DOMAIN};
 
         root /usr/share/nginx/html;
         index index.html;
@@ -70,14 +70,14 @@ http {
 
     server {
         listen 80;
-        server_name thumb.waeco-soft.com;
+        server_name thumb.${HOST_DOMAIN};
 
         root /usr/share/nginx/html/data/thumb;
     }
 
     server {
         listen 80;
-        server_name img.waeco-soft.com;
+        server_name img.${HOST_DOMAIN};
 
         root /usr/share/nginx/html/data/img;
     }

@@ -13,8 +13,8 @@ const flags = {
     nsfw: true,
     nsfl: false
 };
-const parallelDownloads = 1;
-const dataDir = '/home/niels/pr0clone/public/data';
+const parallelDownloads = 2;
+const dataDir = '/data';
 
 // Get items
 request(apiUrl + 'items/get?flags='+getFlags(flags)+'&promoted='+(topOnly ? 1 : 0), (err, res, body) => {
