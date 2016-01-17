@@ -9,4 +9,5 @@ cp $DIR/public/index.html.template $DIR/public/index.html
 sed -i "s/\\\${HOST_DOMAIN}/$1/g" $DIR/public/index.html
 sed -i "s/\\\${HOST_PORT}/$2/g" $DIR/public/index.html
 
+docker rm pr0clone_webserver > /dev/null
 docker run -d --name pr0clone_webserver -v "$DIR/public":/usr/share/nginx/html -v "$DIR/nginx.conf":/etc/nginx/nginx.conf:ro -p $2:80 nginx
