@@ -15,9 +15,12 @@ const flags = {
 };
 const parallelDownloads = 2;
 const dataDir = '/data';
+const updateIntervall = 1 * 60 * 1000; //Once per minute
+
 
 // Get items
-request(apiUrl + 'items/get?flags='+getFlags(flags)+'&promoted='+(topOnly ? 1 : 0), (err, res, body) => {
+function getItems(url, interval) {
+request(url, (err, res, body) => {
     var data = JSON.parse(body);
     console.log('Fetched ' + data.items.length + ' items');
     var q = async.queue((data, callback) => {
@@ -36,8 +39,14 @@ request(apiUrl + 'items/get?flags='+getFlags(flags)+'&promoted='+(topOnly ? 1 : 
         });
     }, parallelDownloads);
     q.push(data.items);
-    q.drain = function() { console.log('Done'); }
+    q.drain = function() { 
+        console.log('Done'); 
+        setTimeout(getItems.bind(null, url, interval), interval);
+    }
 });
+}
+getItems(apiUrl + 'items/get?flags='+getFlags(flags)+'&promoted='+(topOnly ? 1 : 0), updateIntervall);
+
 
 function getFlags(flags) {
     var res = 0;
