@@ -1,0 +1,22 @@
+{
+  //enable debug mode
+  debug: false,
+  //fetch only images on top
+  topOnly: true,
+  //fetch sfw images
+  sfw: true,
+  //fetch nsfw images
+  nsfw: true,
+  //fetch nsfl images
+  nsfl: true,
+  //path to data storage of the web folder
+  dataDir: '/data',
+  //number of parallel downloads
+  parallelDownloads: 2,
+  //interval to look for new images
+  updateInterval: 60000,
+  //delay after a failed download is tried again
+  retryAfterError: 5000,
+  //pr0gramm.com api url
+  apiUrl: 'http://pr0gramm.com/api/'
+}
