@@ -68,17 +68,4 @@ http {
         }
     }
 
-    server {
-        listen 80;
-        server_name thumb.${HOST_DOMAIN};
-
-        root /usr/share/nginx/html/data/thumb;
-    }
-
-    server {
-        listen 80;
-        server_name img.${HOST_DOMAIN};
-
-        root /usr/share/nginx/html/data/img;
-    }
 }
