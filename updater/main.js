@@ -16,36 +16,40 @@ const flags = {
 const parallelDownloads = 2;
 const dataDir = '/data';
 const updateIntervall = 1 * 60 * 1000; //Once per minute
-
+const retryAfterError = 5 * 1000; //Retry after five seconds
 
 // Get items
-function getItems(url, interval) {
-request(url, (err, res, body) => {
-    var data = JSON.parse(body);
-    console.log('Fetched ' + data.items.length + ' items');
-    var q = async.queue((data, callback) => {
-        fs.stat(dataDir + '/img/' + data.image, (err, stats) => {
-            if(err && err.errno == -2) {
-                async.parallel([
-                    download.bind(null, 'thumb', data.thumb),
-                    download.bind(null, 'img', data.image)
-                ], callback);  
-            } else if(err) {
-                console.log('File Stats Error:', err);
-                callback();
-            } else {
-                callback();
-            }
-        });
-    }, parallelDownloads);
-    q.push(data.items);
-    q.drain = function() { 
-        console.log('Done'); 
-        setTimeout(getItems.bind(null, url, interval), interval);
-    }
-});
+function getItems(url) {
+    request(url, (err, res, body) => {
+        if(err) {
+            console.log('Fetched Error:', err)
+            return setTimeout(getItems.bind(null, url), retryAfterError);
+        }
+        var data = JSON.parse(body);
+        console.log('Fetched ' + data.items.length + ' items');
+        var q = async.queue((data, callback) => {
+            fs.stat(dataDir + '/img/' + data.image, (err, stats) => {
+                if(err && err.errno == -2) {
+                    async.parallel([
+                        download.bind(null, 'thumb', data.thumb),
+                        download.bind(null, 'img', data.image)
+                    ], callback);  
+                } else if(err) {
+                    console.log('File Stats Error:', err);
+                    callback();
+                } else {
+                    callback();
+                }
+            });
+        }, parallelDownloads);
+        q.push(data.items);
+        q.drain = function() { 
+            console.log('Done'); 
+            setTimeout(getItems.bind(null, url), updateIntervall);
+        }
+    });
 }
-getItems(apiUrl + 'items/get?flags='+getFlags(flags)+'&promoted='+(topOnly ? 1 : 0), updateIntervall);
+getItems(apiUrl + 'items/get?flags='+getFlags(flags)+'&promoted='+(topOnly ? 1 : 0));
 
 
 function getFlags(flags) {
@@ -60,10 +64,14 @@ function getFlags(flags) {
 }
 
 function download(type, url, callback) {
-    fs.mkdirParent(dataDir + '/' + type + '/'+path.dirname(url), 0o775, () => {
+    fs.mkdirParent(dataDir + '/' + type + '/'+path.dirname(url), 0o775, (error) => {
+        if(error) throw error;
         console.log("Downloading: "+type+"/"+url);
         var fileStream = fs.createWriteStream(dataDir + '/' + type + '/' + url);
         fileStream.on('finish', () => { console.log("Done: "+type+"/"+url); callback(); });
-        request('http://' + type + '.pr0gramm.com/' + url).pipe(fileStream);
+        request('http://' + type + '.pr0gramm.com/' + url).on('error', (err) => {
+            console.log("Download Error: ", err);
+            setTimeout(download.bind(null, type, url, callback), retryAfterError);
+        }).pipe(fileStream);
     });
 }
