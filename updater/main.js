@@ -80,7 +80,7 @@ if (conf.get('help') || conf.get('h')) {
 }
 
 if (conf.get('save')) {
-    return conf.stores.file.save( (err) => { if(err) throw err; console.log('Config stored in '+conf.get('save')); });
+    return conf.stores.file.save( (err) => { if(err) throw err; console.log('Config stored in '+conf.stores.file.file); });
 }
 
 
@@ -122,11 +122,11 @@ getItems(conf.get('apiUrl') + 'items/get?flags='+getFlags()+'&promoted='+(conf.g
 
 function getFlags() {
     var res = 0;
-    if(conf.get('flags:sfw'))
+    if(conf.get('sfw'))
         res += 1;
-    if(conf.get('flags:nsfw'))
+    if(conf.get('nsfw'))
         res += 2;
-    if(conf.get('flags:nsfl'))
+    if(conf.get('nsfl'))
         res += 4;
     return res;
 }
