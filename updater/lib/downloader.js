@@ -89,7 +89,7 @@ function downloadInfo(conf, id, callback) {
 			content: "pr0gramm.com API is unreachable\r\ncomments and tags were loded from cache.\r\nThey may be outdated\r\nLast Update: "+(new Date()).toString(),
 			created: Math.floor(Date.now() / 1000),
 			down: 0,
-			id: 0,
+			id: -1,
 			mark: 8,
 			name: "pr0clone",
 			parent: 0,

@@ -140,7 +140,7 @@ exports.parseArgs = function() {
 	return conf;
 };
 
- exports.getFlags = function(conf) {
+exports.getFlags = function(conf) {
     var res = 0;
     if(conf.get('sfw'))
         res += 1;
@@ -149,4 +149,12 @@ exports.parseArgs = function() {
     if(conf.get('nsfl'))
         res += 4;
     return res;
-}
+};
+
+exports.fromFlags = function(flag) {
+    var res = [];
+    if(flag >= 4) { res.push(4); flag -= 4; }
+    if(flag >= 2) { res.push(2); flag -= 2; }
+    if(flag >= 1) { res.push(1); flag -= 1; }
+    return res;
+};

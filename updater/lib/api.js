@@ -23,7 +23,7 @@ exports.start = function (conf) {
 		conf.get('debug') && console.log("Get Request [/api/items/get]: ", serveLocaly, req.query);
 		//Use this helper function as proxy fallback
 		function serveLocal() {
-			cache.getItems(req.query.id, (err, items) => {
+			cache.getItems(req.query.id, req.query.promoted, req.query.flags, (err, items) => {
 				if(err) {
 					console.log('Error in getItems', err);
 					return res.status(503).end();
@@ -44,18 +44,22 @@ exports.start = function (conf) {
 			serveLocal();
 		} else {
 			//Otherwise use proxy
+            req.url = req.originalUrl;
 			proxy.web(req, res, { 
-				target: 'http://pr0gramm.com'
+				target: 'http://pr0gramm.com',
+                changeOrigin: true
 			}, serveLocal);
 		}
 	});
 	api.use('/items/info', (req, res, next) => {
-		conf.get('debug') && console.log("Get Request [/api/items/get]: ", serveLocaly, req.query);
+		conf.get('debug') && console.log("Get Request [/api/items/info]: ", serveLocaly, req.query);
 		//Use this helper function as proxy fallback
 		function serveLocal() {
-			res.setHeader('Content-Type', 'text/plain; Charset=UTF-8');
+			res.setHeader('Content-Type', 'application/json; Charset=UTF-8');
+            res.setHeader('Age', 0);
 			res.sendFile(conf.get('dataDir') + '/items/'+req.query.itemId+'.json', (err) => {
-				console.log('Item info does not exsist', err);
+				if(!err) return;
+                console.log('Item info does not exsist', err);
 				//Send fallback message
 				res.send({
 					tags: [
@@ -63,7 +67,7 @@ exports.start = function (conf) {
 						{ id: 0,confidence: 0.9,tag: "No Tags in cache" }
 					],
 					comments: [
-						{ id: 0,parent: 0,content: "pr0gramm.com API is unreachable\r\nand no comments were found in cache",created: Math.floor(Date.now() / 1000),up: 0,down: 0,confidence: 1,name: "pr0clone",mark: 8 },
+						{ id: -1,parent: 0,content: "pr0gramm.com API is unreachable\r\nand no comments were found in cache",created: Math.floor(Date.now() / 1000),up: 0,down: 0,confidence: 1,name: "pr0clone",mark: 8 },
 					],
 					ts: Math.floor(Date.now() / 1000),
 					cache: "item:"+req.query.itemId,
@@ -77,14 +81,18 @@ exports.start = function (conf) {
 			serveLocal();
 		} else {
 			//Otherwise use proxy
+            req.url = req.originalUrl;
 			proxy.web(req, res, { 
-				target: 'http://pr0gramm.com'
+				target: 'http://pr0gramm.com',
+                changeOrigin: true
 			}, serveLocal);
 		}
 	});
 	api.use('*', (req, res, next) => {
+        req.url = req.originalUrl;
 		proxy.web(req, res, { 
-			target: 'http://pr0gramm.com'
+			target: 'http://pr0gramm.com',
+            changeOrigin: true
 		});
 	});
 
@@ -92,15 +100,16 @@ exports.start = function (conf) {
 	app.use('/api', api);
 	app.use('/data', express.static(conf.get('dataDir')));
 	app.get('/data/:type/*', (req, res, next) => {
-		conf.get('debug') && console.log("Image does not exsist; using proxy", req.params);
+		//conf.get('debug') && console.log("Image does not exsist; using proxy", req.params);
+        req.url = '/'+req.params[0];
 		proxy.web(req, res, { 
 			target: 'http://'+req.params.type+'.pr0gramm.com',
-			forward: '/'+req.params[0]
+            changeOrigin: true
 		});
 	});
 	app.use('/', express.static(conf.get('publicDir')));
 	app.get('*', (req, res, next) => {
-		res.sendfile(conf.get('publicDir') + '/index.html');
+		res.sendFile(conf.get('publicDir') + '/index.html');
 	});
 	
 	app.listen(conf.get('webPort'), conf.get('bindAddress'));
