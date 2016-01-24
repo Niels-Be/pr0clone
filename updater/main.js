@@ -90,10 +90,15 @@ if (conf.get('save')) {
 function getItems(url) {
     request(url, (err, res, body) => {
         if(err) {
-            console.log('Fetched Error:', err)
+            console.log('Fetch Error:', err)
             return setTimeout(getItems.bind(null, url), conf.get('retryAfterError'));
         }
-        var data = JSON.parse(body);
+        try {
+            var data = JSON.parse(body);
+        } catch(err2) {
+            console.log('Error while parsing JSON', err2);
+            return setTimeout(getItems.bind(null, url), conf.get('retryAfterError'));
+        }
         console.log('Fetched ' + data.items.length + ' items');
         var q = async.queue((data, callback) => {
             fs.stat(conf.get('dataDir') + '/img/' + data.image, (err, stats) => {
