@@ -30,7 +30,7 @@ exports.getItems = function(id, promoted, callback) {
 						callback(null, {
 							atEnd: docs.length < 130,
 							atStart: docs2.length < 126,
-							items: docs.concat(docs2);
+							items: docs.concat(docs2)
 						});
 					});
 				});
@@ -54,7 +54,7 @@ exports.getItems = function(id, promoted, callback) {
 					callback(null, {
 						atEnd: docs.length < 130,
 						atStart: docs2.length < 126,
-						items: docs.concat(docs2);
+						items: docs.concat(docs2)
 					});
 				});
 			});
@@ -66,13 +66,13 @@ exports.updateItems = function(items) {
 	//rename id field
 	for(var i = 0; i < items.length; i++) {
 		items[i]._id = items[i].id;
-		db.items.update({ _id: items[i].id , items[i], (err) => {
+		db.items.update({ _id: items[i].id } , items[i], (err) => {
 			if(err) console.log('Error Cache update Items', err);
 		});
 	}
 	
 };
 
-exports.startCleanup = function(conf) {
+function startCleanup(conf) {
 	
-};
+}

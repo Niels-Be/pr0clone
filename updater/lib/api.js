@@ -14,7 +14,7 @@ exports.start = function (conf) {
 	proxy.on('error', (err, req, res) => {
 		serverLocaly = true;
 		clearTimeout(resetTaskId);
-		resetTaskId = setTimeout(=> { serverLocaly = false; }, conf.get('proxyBackoff'));
+		resetTaskId = setTimeout(() => { serverLocaly = false; }, conf.get('proxyBackoff'));
 	});
 
 	api.use('/items/get', (req, res, next) => {
@@ -85,7 +85,7 @@ exports.start = function (conf) {
 	});
 
 
-	app.use('/api', router);
+	app.use('/api', api);
 	app.use('/data', express.static(conf.get('dataDir')));
 	app.get('/data/:type/*', (req, res, next) => {
 		console.log("Image does not exsist; using proxy", req.params);

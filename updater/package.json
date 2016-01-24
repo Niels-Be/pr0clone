@@ -2,6 +2,7 @@
   "name": "pr0clone",
   "version": "1.0.0",
   "description": "Updater for pr0clone website",
+  "repository": "waeco/pr0clone",
   "main": "main.js",
   "scripts": {
     "start": "node main.js"
@@ -10,8 +11,11 @@
   "license": "ISC",
   "dependencies": {
     "async": "^1.5.2",
+    "express": "^4.13.4",
     "hjson": "^1.7.4",
+    "http-proxy": "^1.12.0",
     "nconf": "^0.8.2",
+    "nedb": "^1.7.1",
     "request": "^2.67.0"
   }
 }
