@@ -55,6 +55,12 @@ exports.parseArgs = function() {
 			default: '0.0.0.0',
 			type: 'string'
 		},
+		'l': {
+			alias: 'local',
+			desc: 'Serve as much as possible from local cache',
+			default: false,
+			type: 'boolean'
+		},
 		'dataDir': {
 			desc: 'Path to data storage',
 			default: '/data',

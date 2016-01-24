@@ -8,18 +8,21 @@ exports.start = function (conf) {
 	var api = express.Router();
 
 	var proxy = httpProxy.createProxyServer();
-	var serverLocaly = false;
+	var serveLocaly = conf.get('local');
 
 	var resetTaskId;
 	proxy.on('error', (err, req, res) => {
-		serverLocaly = true;
+		conf.get('debug') && console.log("proxy connection failed", err);
+		serveLocaly = true;
 		clearTimeout(resetTaskId);
-		resetTaskId = setTimeout(() => { serverLocaly = false; }, conf.get('proxyBackoff'));
+		if(!conf.get('local'))
+			resetTaskId = setTimeout(() => { serveLocaly = false; }, conf.get('proxyBackoff'));
 	});
 
 	api.use('/items/get', (req, res, next) => {
+		conf.get('debug') && console.log("Get Request [/api/items/get]: ", serveLocaly, req.query);
 		//Use this helper function as proxy fallback
-		function serverLocal() {
+		function serveLocal() {
 			cache.getItems(req.query.id, (err, items) => {
 				if(err) {
 					console.log('Error in getItems', err);
@@ -37,18 +40,19 @@ exports.start = function (conf) {
 				});
 			});
 		}
-		if(serverLocaly) {
-			serverLocal();
+		if(serveLocaly) {
+			serveLocal();
 		} else {
 			//Otherwise use proxy
 			proxy.web(req, res, { 
 				target: 'http://pr0gramm.com'
-			}, serverLocal);
+			}, serveLocal);
 		}
 	});
 	api.use('/items/info', (req, res, next) => {
+		conf.get('debug') && console.log("Get Request [/api/items/get]: ", serveLocaly, req.query);
 		//Use this helper function as proxy fallback
-		function serverLocal() {
+		function serveLocal() {
 			res.setHeader('Content-Type', 'text/plain; Charset=UTF-8');
 			res.sendFile(conf.get('dataDir') + '/items/'+req.query.itemId+'.json', (err) => {
 				console.log('Item info does not exsist', err);
@@ -69,13 +73,13 @@ exports.start = function (conf) {
 			});
 		}
 		
-		if(serverLocaly) {
-			serverLocal();
+		if(serveLocaly) {
+			serveLocal();
 		} else {
 			//Otherwise use proxy
 			proxy.web(req, res, { 
 				target: 'http://pr0gramm.com'
-			}, serverLocal);
+			}, serveLocal);
 		}
 	});
 	api.use('*', (req, res, next) => {
@@ -88,7 +92,7 @@ exports.start = function (conf) {
 	app.use('/api', api);
 	app.use('/data', express.static(conf.get('dataDir')));
 	app.get('/data/:type/*', (req, res, next) => {
-		console.log("Image does not exsist; using proxy", req.params);
+		conf.get('debug') && console.log("Image does not exsist; using proxy", req.params);
 		proxy.web(req, res, { 
 			target: 'http://'+req.params.type+'.pr0gramm.com',
 			forward: '/'+req.params[0]
