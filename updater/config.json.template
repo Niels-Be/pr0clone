@@ -1,6 +1,12 @@
 {
   //enable debug mode
   debug: false,
+  //serve as much as possible from local cache
+  local: false,
+  //Address to bind WebServer to
+  bindAddress: '0.0.0.0',
+  //Port for WebServer
+  webPort: 3000,
   //fetch only images on top
   topOnly: true,
   //fetch sfw images
@@ -15,6 +21,8 @@
   publicDir: '/public',
   //number of parallel downloads
   parallelDownloads: 2,
+  //duration after a failed proxy request is served local
+  proxyBackoff: 5000,
   //interval to look for new images
   updateInterval: 60000,
   //delay after a failed download is tried again
