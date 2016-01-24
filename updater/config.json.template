@@ -9,8 +9,10 @@
   nsfw: true,
   //fetch nsfl images
   nsfl: true,
-  //path to data storage of the web folder
+  //path to data storage
   dataDir: '/data',
+  //path to static content
+  publicDir: '/public',
   //number of parallel downloads
   parallelDownloads: 2,
   //interval to look for new images

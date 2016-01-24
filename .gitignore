@@ -1,5 +1,4 @@
 /public/data/
 /updater/node_modules/
 /nginx.conf
-/public/index.html
 /updater/config.json
