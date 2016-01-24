@@ -99,7 +99,7 @@ function getItems(url) {
             console.log('Error while parsing JSON', err2);
             return setTimeout(getItems.bind(null, url), conf.get('retryAfterError'));
         }
-        console.log('Fetched ' + data.items.length + ' items');
+        if (conf.get('debug')) console.log('Fetched ' + data.items.length + ' items');
         var q = async.queue((data, callback) => {
             fs.stat(conf.get('dataDir') + '/img/' + data.image, (err, stats) => {
                 if(err && err.errno == -2) {
@@ -117,7 +117,7 @@ function getItems(url) {
         }, conf.get('parallelDownloads'));
         q.push(data.items);
         q.drain = function() { 
-            console.log('Done'); 
+            if (conf.get('debug')) console.log('Done'); 
             setTimeout(getItems.bind(null, url), conf.get('updateInterval'));
         }
     });
@@ -139,9 +139,12 @@ function getFlags() {
 function download(type, url, callback) {
     fs.mkdirParent(conf.get('dataDir') + '/' + type + '/'+path.dirname(url), 0o775, (error) => {
         if(error && error.code !== 'EEXIST') throw error;
-        console.log("Downloading: "+type+"/"+url);
+        if (conf.get('debug')) console.log("Downloading: "+type+"/"+url);
         var fileStream = fs.createWriteStream(conf.get('dataDir') + '/' + type + '/' + url);
-        fileStream.on('finish', () => { console.log("Done: "+type+"/"+url); callback(); });
+        fileStream.on('finish', () => { 
+            if (conf.get('debug')) console.log("Done: "+type+"/"+url); 
+            callback(); 
+        });
         request('http://' + type + '.pr0gramm.com/' + url).on('error', (err) => {
             console.log("Download Error: ", err);
             setTimeout(download.bind(null, type, url, callback), conf.get('retryAfterError'));
