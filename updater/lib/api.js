@@ -7,17 +7,22 @@ exports.start = function (conf) {
 	var app = express();
 	var api = express.Router();
 
-	var proxy = httpProxy.createProxyServer();
+	var proxy = httpProxy.createProxyServer({ proxyTimeout: 3000 });
 	var serveLocaly = conf.get('local');
 
 	var resetTaskId;
-	proxy.on('error', (err, req, res) => {
-		conf.get('debug') && console.log("proxy connection failed", err);
+	proxy.on('error', handleProxyTimeout);
+    function handleProxyTimeout(err, req, res) {
+		if(conf.get('debug')) console.log("proxy connection failed", err);
 		serveLocaly = true;
 		clearTimeout(resetTaskId);
 		if(!conf.get('local'))
 			resetTaskId = setTimeout(() => { serveLocaly = false; }, conf.get('proxyBackoff'));
-	});
+
+        //TODO: send a response in some way
+        //      this does not work, because cache.getItems is async
+        //if(!res.headersSent) res.sendStatus(503);
+	}
 
 	api.use('/items/get', (req, res, next) => {
 		conf.get('debug') && console.log("Get Request [/api/items/get]: ", serveLocaly, req.query);
@@ -48,7 +53,7 @@ exports.start = function (conf) {
 			proxy.web(req, res, { 
 				target: 'http://pr0gramm.com',
                 changeOrigin: true
-			}, serveLocal);
+			}, (err, req, res) => { serveLocal(); handleProxyTimeout(err, req, res); });
 		}
 	});
 	api.use('/items/info', (req, res, next) => {
@@ -85,7 +90,7 @@ exports.start = function (conf) {
 			proxy.web(req, res, { 
 				target: 'http://pr0gramm.com',
                 changeOrigin: true
-			}, serveLocal);
+			}, (err, req, res) => { serveLocal(); handleProxyTimeout(err, req, res);});
 		}
 	});
 	api.use('*', (req, res, next) => {
