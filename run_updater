@@ -1,7 +1,0 @@
-#!/bin/bash
-
-DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
-
-cd $DIR/updater
-docker rm pr0clone_updater > /dev/null
-docker run -d --name pr0clone_updater -v "$DIR/public/data":/data -v "$DIR/updater":/usr/src/app node sh -c "cd /usr/src/app && npm install && npm start -- $@"
