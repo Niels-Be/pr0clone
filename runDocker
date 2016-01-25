@@ -2,6 +2,12 @@
 
 DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
 
+port=3000
+if [ -n "$1" ]; then 
+  port=$1
+  shift
+fi
+
 cd $DIR/updater
 docker rm pr0clone &> /dev/null
-docker run -d --name pr0clone -v "$DIR/public":/public -v "$DIR/public/data":/data -v "$DIR/updater":/usr/src/app node sh -c "cd /usr/src/app && npm install && npm start -- $@"
+docker run -d --name pr0clone -p $port:3000 -v "$DIR/public":/public -v "$DIR/public/data":/data -v "$DIR/updater":/usr/src/app node sh -c "cd /usr/src/app && npm install && npm start"

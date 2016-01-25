@@ -1,4 +1,4 @@
 /public/data/
 /updater/node_modules/
-/nginx.conf
 /updater/config.json
+/updater/updater.log
