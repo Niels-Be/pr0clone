@@ -112,7 +112,7 @@ exports.parseArgs = function() {
 		},
 		'proxyBackoff': {
 			desc: 'Time in milliseconds the web server serves API requests localy after a proxy request failed',
-			default: 5 * 1000,
+			default: 60 * 1000,
 			type: 'int'
 		},
 		'apiUrl': {
