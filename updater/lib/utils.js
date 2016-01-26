@@ -102,17 +102,22 @@ exports.parseArgs = function() {
 		},
 		'updateInterval': {
 			desc: 'Interval in milliseconds the updater looks for new images',
-			default: 1 * 60 * 1000,
+			default: 5 * 60 * 1000,
 			type: 'int'
 		},
 		'retryAfterError': {
 			desc: 'Time in milliseconds the updater retries a failed download',
-			default: 5 * 1000,
+			default: 10 * 1000,
 			type: 'int'
 		},
+        'proxyTimeout': {
+            desc: 'Time in milliseconds to wait for a response of pr0gramm API before serving from cache',
+            default: 3 * 1000,
+            type: 'int'
+        },
 		'proxyBackoff': {
 			desc: 'Time in milliseconds the web server serves API requests localy after a proxy request failed',
-			default: 60 * 1000,
+			default: 1 * 60 * 1000,
 			type: 'int'
 		},
 		'apiUrl': {
@@ -120,6 +125,16 @@ exports.parseArgs = function() {
 			default: 'http://pr0gramm.com/api/',
 			type: 'string'
 		},
+        'keepImagePeriod': {
+            desc: 'Days to keep images on local disk; 0 to keep them forever',
+            default: 3,
+            type: 'int'
+        },
+        'keepMetadata': {
+            desc: 'If true, metadata like comments and tags wont be deleted',
+            default: false,
+            type: 'boolean'
+        },
 		'h': {
 			alias: 'help',
 			desc: 'Displays this help text'

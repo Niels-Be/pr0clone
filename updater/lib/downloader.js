@@ -6,7 +6,6 @@ const utils = require('./utils');
 const cache = require('./cache');
 
 exports.start = function (conf) {
-	utils.mkdirFast(conf.get('dataDir') + '/items');
 	
 	setTimeout( getItems.bind(null,
 		conf.get('apiUrl') + 'items/get?flags='+utils.getFlags(conf)+'&promoted='+(conf.get('topOnly') ? 1 : 0),
@@ -33,19 +32,18 @@ function getItems (url, conf) {
 		cache.updateItems(data.items);
 		
         var q = async.queue((data, callback) => {
-            fs.stat(conf.get('dataDir') + '/img/' + data.image, (err, stats) => {
-                if(err && err.errno == -2) {
-                    async.parallel([
-                        downloadImage.bind(null, conf, 'thumb', data.thumb),
-                        downloadImage.bind(null, conf, 'img', data.image),
-                        downloadInfo.bind(null, conf, data.id)
-                    ], callback);  
-                } else if(err) {
-                    console.log('File Stats Error:', err);
-                    callback();
-                } else {
-                    callback();
-                }
+            cache.getInfo(data.id, (err, info) => {
+                if(err) {
+                    console.log('Error while getting info from cache',err);
+                    return callback(err);
+                } else if(info) //Already exsist
+                    return callback();
+
+                async.parallel([
+                    downloadImage.bind(null, conf, 'thumb', data.thumb),
+                    downloadImage.bind(null, conf, 'img', data.image),
+                    downloadInfo.bind(null, conf, data.id)
+                ], callback);  
             });
         }, conf.get('parallelDownloads'));
         q.push(data.items);
@@ -83,18 +81,8 @@ function downloadInfo(conf, id, callback) {
             console.log('Error while parsing JSON', err2);
             return setTimeout(downloadInfo.bind(null, conf, id, callback), conf.get('retryAfterError'));
         }
-		//Append Cache INFO as Comment
-		data.comments.push({
-			confidence: 1,
-			content: "pr0gramm.com API is unreachable\r\ncomments and tags were loded from cache.\r\nThey may be outdated\r\nLast Update: "+(new Date()).toString(),
-			created: Math.floor(Date.now() / 1000),
-			down: 0,
-			id: -1,
-			mark: 8,
-			name: "pr0clone",
-			parent: 0,
-			up: 0
-		});
-		fs.writeFile(conf.get('dataDir') + '/items/'+ id + '.json', JSON.stringify(data), { mode: 0o644 }, callback);
+        
+        cache.updateInfo(id, data);
+        callback();
 	});
 }

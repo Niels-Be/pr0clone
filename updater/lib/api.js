@@ -1,13 +1,14 @@
 const express = require('express');
 const httpProxy = require('http-proxy');
 const cache = require('./cache');
+const proxyIntercept = require('./proxyIntercept');
 
 exports.start = function (conf) {
 
 	var app = express();
 	var api = express.Router();
 
-	var proxy = httpProxy.createProxyServer({ proxyTimeout: 3000 });
+	var proxy = httpProxy.createProxyServer({ proxyTimeout: parseInt(conf.get('proxyTimeout')) });
 	var serveLocaly = conf.get('local');
 
 	var resetTaskId;
@@ -19,10 +20,21 @@ exports.start = function (conf) {
 		if(!conf.get('local'))
 			resetTaskId = setTimeout(() => { serveLocaly = false; }, conf.get('proxyBackoff'));
 
-        //TODO: send a response in some way
-        //      this does not work, because cache.getItems is async
-        //if(!res.headersSent) res.sendStatus(503);
+        //TODO: send a response in some way (find a better way)
+        //wait 2sec for an other error handler to send a response. If nothing was send simply send a 503
+        setTimeout( () => { if(!res.headersSent) res.sendStatus(503); }, 2000);
 	}
+
+    proxyIntercept(proxy, /^\/api\/items\/info/, (req, res, body) => {
+        if(!req.query.itemId) return console.log('Error itemID in Info request not set');
+        try {
+            var data = JSON.parse(body);
+        } catch(err) {
+            return console.log('Error could not parse JSON', err);
+        }
+        conf.get('debug') && console.log('Updated cache of', req.query.itemId);
+        cache.updateInfo(req.query.itemId, data);
+    });
 
 	api.use('/items/get', (req, res, next) => {
 		conf.get('debug') && console.log("Get Request [/api/items/get]: ", serveLocaly, req.query);
@@ -60,10 +72,28 @@ exports.start = function (conf) {
 		conf.get('debug') && console.log("Get Request [/api/items/info]: ", serveLocaly, req.query);
 		//Use this helper function as proxy fallback
 		function serveLocal() {
-			res.setHeader('Content-Type', 'application/json; Charset=UTF-8');
+		    /*if(!req.query.itemId) {
+                conf.get('debug') && console.log('Error itemID in Info request not set');
+                return res.send({"tags":[],"comments":[],"ts":Math.floor(Date.now() / 1000),"cache":"item:0","rt":12,"qc":2});
+            }*/
+        	res.setHeader('Content-Type', 'application/json; Charset=UTF-8');
             res.setHeader('Age', 0);
-			res.sendFile(conf.get('dataDir') + '/items/'+req.query.itemId+'.json', (err) => {
-				if(!err) return;
+			cache.getInfo(req.query.itemId, (err, info) => {
+				if(!err) {
+                    //Append Cache INFO as Comment
+                    info.comments.push({
+                        confidence: 1,
+                        content: "pr0gramm.com API is unreachable\r\ncomments and tags were loded from cache.\r\nThey may be outdated\r\nLast Update: "+(new Date()).toString(),
+                        created: Math.floor(Date.now() / 1000),
+                        down: 0,
+                        id: -1,
+                        mark: 8,
+                        name: "pr0clone",
+                        parent: 0,
+                        up: 0
+                    });
+                    return res.send(info);
+                }
                 console.log('Item info does not exsist', err);
 				//Send fallback message
 				res.send({
