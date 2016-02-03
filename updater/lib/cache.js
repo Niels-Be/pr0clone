@@ -1,5 +1,6 @@
 const Datastore = require('nedb');
 const utils = require('./utils');
+const fs = require('fs');
 
 var db = {};
 exports.init = function(conf) {
